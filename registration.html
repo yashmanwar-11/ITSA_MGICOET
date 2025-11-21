@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Register - ITSA</title>
+<link rel="stylesheet" href="assets/css/style.css"></head>
+<body>
+  <header class="header">
+    <img class="logo" src="assets/images/logo-college.png">
+    <div class="title"><h1>ITSA Community Platform</h1></div>
+    <img class="logo" src="assets/images/logo-itsa.png">
+  </header>
+
+  <nav class="nav">
+    <div class="hamburger" id="hamb">☰</div>
+    <a href="Itsa Platform.html">Home</a>
+    <a href="events.html" class="protected">Events</a>
+    <a href="Alumni.html" class="protected">Alumni</a>
+    <a href="members.html" class="protected">Members</a>
+    <a href="Contactus.html">Contact Us</a>
+    <a href="Aboutus.html">About Us</a>
+    <a id="loginBtn" href="login.html">SignUp/SignIn</a>
+  </nav>
+
+  <main>
+    <form id="registerForm" class="form">
+      <h2 class="center">Create Your Profile</h2>
+
+      <label class="small">Profile Photo (optional)</label>
+      <input id="photo" type="file" accept="image/*" class="input">
+
+      <div id="preview" style="text-align:center;margin:8px 0"></div>
+
+      <label>Full Name</label>
+      <input id="fullName" class="input" placeholder="Your Full Name" required>
+
+      <label>Email</label>
+      <input id="email" class="input" type="email" placeholder="Enter Email" required>
+
+      <label>Password (min 6 chars)</label>
+      <input id="password" class="input" type="password" placeholder="Create Password" required>
+
+      <label>Mobile Number</label>
+      <input id="mobile" class="input" placeholder="Enter Mobile No" required>
+
+      <label>Academic Year</label>
+      <select id="year" class="input">
+        <option value="FY">First Year</option>
+        <option value="SY">Second Year</option>
+        <option value="TY">Third Year</option>
+        <option value="BE">Final Year</option>
+      </select>
+
+      <label>Gender</label>
+      <select id="gender" class="input">
+        <option value="Male">Male</option>
+        <option value="Female">Female</option>
+      </select>
+
+      <button class="btn" type="submit">Create Account</button>
+    </form>
+  </main>
+
+  <footer class="footer">© 2025 ITSA Mauli College</footer>
+
+  <script src="assets/js/main.js"></script>
+  <script>
+    // mobile nav toggle
+    document.getElementById('hamb').onclick = function(){ document.querySelector('.nav').classList.toggle('open'); };
+
+    const photoEl = document.getElementById('photo'), preview = document.getElementById('preview');
+    photoEl.addEventListener('change', ()=> {
+      const f = photoEl.files[0];
+      if(!f) { preview.innerHTML=''; return; }
+      const reader = new FileReader();
+      reader.onload = ()=> preview.innerHTML = '<img src="'+reader.result+'" style="width:120px;height:120px;border-radius:50%;object-fit:cover;border:3px solid var(--maroon)">';
+      reader.readAsDataURL(f);
+    });
+
+    document.getElementById('registerForm').addEventListener('submit', function(e){
+      e.preventDefault();
+      // validation
+      const name = document.getElementById('fullName').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const mobile = document.getElementById('mobile').value.trim();
+      if(!name || !email || password.length < 6 || !mobile){ showToast('Please fill all fields and ensure password >=6'); return; }
+      const file = photoEl.files[0];
+      const reader = new FileReader();
+      reader.onload = function(){
+        const photo = reader.result || '';
+        const user = { name, email, password, mobile, year:document.getElementById('year').value, gender:document.getElementById('gender').value, photo, createdAt: new Date().toLocaleDateString(), badges:0 };
+        saveRegisteredUser(user);
+        showToast('Account created');
+        setTimeout(()=> location.href='login.html', 800);
+      };
+      if(file) reader.readAsDataURL(file); else reader.onload();
+    });
+  </script>
+</body>
+</html>

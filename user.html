@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>User Dashboard - ITSA</title>
+<link rel="stylesheet" href="assets/css/style.css"></head>
+<body>
+  <header class="header">
+    <img class="logo" src="assets/images/logo-college.png">
+    <div class="title"><h1>User Dashboard</h1></div>
+    <img class="logo" src="assets/images/logo-itsa.png">
+  </header>
+
+  <nav class="nav">
+    <div class="hamburger" id="hamb">☰</div>
+    <a href="Itsa Platform.html">Home</a>
+    <a href="events.html" class="protected">Events</a>
+    <a href="Alumni.html" class="protected">Alumni</a>
+    <a href="members.html" class="protected">Members</a>
+    <a href="Contactus.html">Contact Us</a>
+    <a href="Aboutus.html">About Us</a>
+    <a id="loginBtn" href="login.html">SignUp/SignIn</a>
+  </nav>
+
+  <div class="container">
+    <div class="profile-card">
+      <img id="uPhoto" src="assets/images/logo-itsa.png" alt="profile">
+      <div class="profile-meta">
+        <h2 id="uName"></h2>
+        <p class="small"><b>Email:</b> <span id="uEmail"></span></p>
+        <p class="small"><b>Mobile:</b> <span id="uMobile"></span></p>
+        <div class="stat-grid">
+          <div class="stat"><b id="eventsCount">0</b><div class="small">Events joined</div></div>
+          <div class="stat"><b id="memberSince">--</b><div class="small">Member since</div></div>
+          <div class="stat"><b id="badges">0</b><div class="small">Badges</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:18px;display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="card">
+        <h3>Edit Profile</h3>
+        <form id="editForm">
+          <label>Profile Photo</label>
+          <input id="editPhoto" type="file" accept="image/*" class="input">
+          <label>Full Name</label>
+          <input id="editName" class="input">
+          <label>Mobile</label>
+          <input id="editMobile" class="input">
+          <button class="btn" type="submit">Save Profile</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <h3>Security</h3>
+        <form id="pwdForm">
+          <label>Current Password</label>
+          <input id="currentPwd" type="password" class="input">
+          <label>New Password</label>
+          <input id="newPwd" type="password" class="input">
+          <button class="btn" type="submit">Change Password</button>
+        </form>
+
+        <hr style="margin:12px 0">
+
+        <h4>Danger Zone</h4>
+        <button id="delBtn" class="btn" style="background:#c0392b;margin-top:8px">Delete Account</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">© 2025 ITSA Mauli College | All Rights Reserved</footer>
+
+  <script src="assets/js/main.js"></script>
+  <script>
+    document.getElementById('hamb').onclick = ()=> document.querySelector('.nav').classList.toggle('open');
+
+    function loadUser(){
+      const u = getRegisteredUser();
+      if(!u){ showModal('<div style="padding:12px"><h3>No user</h3><p>Please register or login</p><div style="text-align:right"><button class="btn" onclick="location.href=\'login.html\'">Login</button></div></div>'); return; }
+      document.getElementById('uPhoto').src = u.photo || 'assets/images/logo-itsa.png';
+      document.getElementById('uName').textContent = u.name;
+      document.getElementById('uEmail').textContent = u.email;
+      document.getElementById('uMobile').textContent = u.mobile;
+      document.getElementById('eventsCount').textContent = (JSON.parse(localStorage.getItem('joinedEvents')||'[]')).length;
+      document.getElementById('memberSince').textContent = u.createdAt || new Date().toLocaleDateString();
+      document.getElementById('badges').textContent = u.badges || 0;
+
+      // prefill edit form
+      document.getElementById('editName').value = u.name;
+      document.getElementById('editMobile').value = u.mobile;
+    }
+    loadUser();
+
+    // save profile
+    document.getElementById('editForm').addEventListener('submit', function(e){
+      e.preventDefault();
+      const u = getRegisteredUser();
+      if(!u){ showToast('No user found'); return; }
+      const file = document.getElementById('editPhoto').files[0];
+      const reader = new FileReader();
+      reader.onload = function(){
+        if(reader.result) u.photo = reader.result;
+        u.name = document.getElementById('editName').value;
+        u.mobile = document.getElementById('editMobile').value;
+        saveRegisteredUser(u);
+        showToast('Profile updated');
+        loadUser();
+      };
+      if(file) reader.readAsDataURL(file); else reader.onload();
+    });
+
+    // change password
+    document.getElementById('pwdForm').addEventListener('submit', function(e){
+      e.preventDefault();
+      const u = getRegisteredUser();
+      if(!u){ showToast('No user'); return; }
+      const cur = document.getElementById('currentPwd').value;
+      const nw = document.getElementById('newPwd').value;
+      if(cur !== u.password){ showToast('Current password incorrect'); return; }
+      if(nw.length < 6){ showToast('New password must be >= 6'); return; }
+      u.password = nw; saveRegisteredUser(u); showToast('Password changed');
+      document.getElementById('currentPwd').value=''; document.getElementById('newPwd').value='';
+    });
+
+    // delete account
+    document.getElementById('delBtn').addEventListener('click', function(){
+      showModal('<div style="padding:12px"><h3>Delete Account?</h3><p>This will remove your profile from device local data.</p><div style="text-align:right;margin-top:12px"><button class="btn" onclick="document.querySelector(\'.modal-backdrop\').remove()">Cancel</button> <button class="btn" id="confirmDelete" style="background:#c0392b">Delete</button></div></div>');
+      document.getElementById('confirmDelete').onclick = function(){
+        localStorage.removeItem('registeredUser');
+        localStorage.removeItem('isLoggedIn');
+        showToast('Account deleted');
+        location.href='Itsa Platform.html';
+      };
+    });
+  </script>
+</body>
+</html>
